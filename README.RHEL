@@ -1,0 +1,59 @@
+Notes on the Red Hat Enterprise Linux version of ATLAS
+
+by Quentin Spencer
+updated: October 4, 2005
+
+updated by Deji Akingunola
+October 15, 2008
+
+Because ATLAS relies on compile-time optimizations to obtain improved
+performance over BLAS and LAPACK, the resulting binaries are closely
+tied to the hardware on which they are compiled, and can likely result
+in very poor performance on other hardware.  For this reason,
+including a package like ATLAS in Red Hat Enterprise Linux requires some compromises.
+Firstly, a binary ATLAS package must perform reasonably well on the
+entire range of hardware on which it could potentially be installed.
+Optimizing ATLAS for the most modern hardware can result in
+significant performance penalties for users using the same package on
+older hardware.  Second, building from the same source package must
+result in identical binaries for any computer of a particular
+architecture.  This is because the binaries installed on a user's
+computer are built on a computer in the Red Hat Enterprise Linux Extras build system,
+which will have hardware different from the end user's hardware, and
+quite possibly different from other available hardware in the build
+system.
+
+As of version 3.8.2 (in Red Hat Enterprise Linux), ATLAS builds uses achitectural defaults,
+are partial results of past searches when the compiler and architecture
+are known, to discover the appropriate kernels used to build all the required
+libraries. They make install time quicker and also ensure that good results are
+obtained, since they typically represent several searches and/or user
+intervention into the usual search so that maximum performance is found.
+The result is a set of libraries that will not
+necessarily achieve optimal performance on any given hardware but
+should still offer significant performance gains over the reference
+BLAS and LAPACK libraries on most hardware.  The binary package
+includes the atlas libraries as well as binary-compatible blas and
+lapack libraries that should work as a drop-in replacement for the
+standard ones (they are installed in /usr/lib{64}/atlas* rather than
+/usr/lib{64}).
+
+For i386 systems, 4 ATLAS subpackages are built for 3Dnow, SSE1, SSE2, and SSE3
+ix86 extensions, using architectural defaults obtained from Athlon K7, PIII, Pentium 4 with SSE2 extension and PENTIUM 4 with SSE3 extensions respectively.
+
+This packaging allows multiple installation of different atlas sub-packages
+at the same time. The alternatives system (read 'man alternatives' for usage)
+is used in the -devel subpackages to select the appropriate location for the 
+architectural dependent header files.
+ 
+This package is designed to build RPMs that are identical regardless
+of where they are compiled and that provide reasonable performance on
+a wide range of hardware. For users who want optimal performance on
+particular hardware, custom RPMs can be built from the source package
+by setting the RPM macro "enable_native_atlas" to a value of 1. This
+can be done from the command line as in the following example:
+
+rpmbuild -D "enable_native_atlas 1" --rebuild atlas-3.8.3-1.src.rpm
+
+This will cause the ATLAS build to use the achitectural default most
+appropriate for the system on which the package is to be built.
