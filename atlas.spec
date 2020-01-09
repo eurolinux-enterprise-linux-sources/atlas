@@ -5,7 +5,7 @@ Version:        3.10.1
 %if "%{?enable_native_atlas}" != "0"
 %define dist .native
 %endif
-Release:        3%{?dist}
+Release:        7%{?dist}
 Summary:        Automatically Tuned Linear Algebra Software
 
 Group:          System Environment/Libraries
@@ -25,7 +25,7 @@ Source10: 	lapack-3.4.2-clean.tgz
 #archdefs taken from debian:
 Source11: 	POWER332.tar.bz2
 Source12: 	IBMz932.tar.bz2
-Source13: 	IBMz964.tar.bz2
+#Source13: 	IBMz964.tar.bz2
 #upstream arm uses softfp abi, fedora arm uses hard
 Source14: 	ARMv732NEON.tar.bz2
 
@@ -297,8 +297,6 @@ ix86 architecture.
 %endif
 
 %prep
-#uname -a
-#cat /proc/cpuinfo
 %setup -q -n ATLAS
 #patch0 -p0 -b .shared
 %ifarch s390 s390x
@@ -321,7 +319,8 @@ cp %{SOURCE1} CONFIG/ARCHS/
 cp %{SOURCE3} doc
 cp %{SOURCE11} CONFIG/ARCHS/
 cp %{SOURCE12} CONFIG/ARCHS/
-cp %{SOURCE13} CONFIG/ARCHS/
+#cp %{SOURCE13} CONFIG/ARCHS/
+
 cp %{SOURCE14} CONFIG/ARCHS/
 #cp %{SOURCE8} CONFIG/ARCHS/
 #cp %{SOURCE9} CONFIG/ARCHS/
@@ -338,7 +337,7 @@ for type in %{types}; do
 
 	mkdir -p %{_arch}_${type}
 	pushd %{_arch}_${type}
-	../configure  %{mode} %{?threads_option} %{?arch_option} -D c -DWALL -Fa alg '%{armflags} -g -Wa,--noexecstack -fPIC'\
+	../configure  %{mode} %{?threads_option} %{?arch_option} -D c -DWALL -Fa alg '%{armflags} -g -fstack-protector-strong -Wa,--noexecstack -fPIC'\
 	--prefix=%{buildroot}%{_prefix}			\
 	--incdir=%{buildroot}%{_includedir}		\
 	--libdir=%{buildroot}%{_libdir}/${libname}	\
@@ -348,7 +347,8 @@ for type in %{types}; do
 %ifarch x86_64
 	if [ "$type" = "base" ]; then
 #		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE2#' Make.inc
-		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE3#' Make.inc
+#		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE3#' Make.inc
+		sed -i 's#ARCH =.*#ARCH = P4E64SSE3#' Make.inc
 #		sed -i 's#-DATL_SSE3##' Make.inc
 		sed -i 's#-DATL_AVX##' Make.inc 
 #		sed -i 's#-msse3#-msse2#' Make.inc 
@@ -393,49 +393,16 @@ for type in %{types}; do
 %endif
 
 %ifarch s390 s390x
-# we require a z9/z10/z196 but base,z10 and z196
-# we also need a compiler with -march=z196 support
-# the base support will use z196 tuning
 	if [ "$type" = "base" ]; then
-		%ifarch s390x 
-			sed -i 's#ARCH =.*#ARCH = IBMz964#' Make.inc
-                %endif
-		%ifarch s390 
-			sed -i 's#ARCH =.*#ARCH = IBMz932#' Make.inc
-                %endif
-		sed -i 's#-march=z196#-march=z9-109 -mtune=z196#' Make.inc
-#		sed -i 's#-march=z10 -mtune=z196#-march=z9-109 -mtune=z196#' Make.inc
-		sed -i 's#-march=z10#-march=z9-109 -mtune=z10#' Make.inc
-		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz9#' Make.inc
-		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz9#' Make.inc
-#		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz9#' Make.inc
-	elif [ "$type" = "z10" ]; then
-		%ifarch s390x 
-		
-#			cat Make.inc | grep "ARCH ="
-			sed -i 's#ARCH =.*#ARCH = IBMz1064#' Make.inc
-                %endif
-		%ifarch s390 
-			sed -i 's#ARCH =.*#ARCH = IBMz1032#' Make.inc
-#			cat Make.inc | grep "ARCH ="
-                %endif
-		sed -i 's#-march=z196#-march=z10#' Make.inc
-		sed -i 's#-mtune=z196##' Make.inc
-		sed -i 's#-march=z9-109#-march=z10#' Make.inc
-		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz10#' Make.inc
-		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz10#' Make.inc
-		%define pr_z10 %(echo $((%{__isa_bits}+1)))
-	elif [ "$type" = "z196" ]; then
-
 		%ifarch s390x 
 			sed -i 's#ARCH =.*#ARCH = IBMz19664#' Make.inc
                 %endif
 		%ifarch s390 
-			sed -i 's#ARCH =.*#ARCH = IBMz19632#' Make.inc
+			sed -i 's#ARCH =.*#ARCH = IBMz932#' Make.inc
                 %endif
-		sed -i 's#-march=z196#-march=z10 -mtune=z196#' Make.inc
-		sed -i 's#-march=z10#-march=z10 -mtune=z196#' Make.inc
-		sed -i 's#-march=z9-109#-march=z10 -mtune=z196#' Make.inc
+		#sed -i 's#-march=z196#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10#-march=z196#' Make.inc
+		sed -i 's#-march=z9-109#-march=z196#' Make.inc
 		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz196#' Make.inc
 		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz196#' Make.inc
 		%define pr_z196 %(echo $((%{__isa_bits}+2)))
@@ -786,6 +753,21 @@ fi
 %endif
 
 %changelog
+* Fri Feb 28 2014 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-7
+- change x86_64 archdef to P4, prefetch instruction from hammer is illegal on some pentium 4
+- add -fstack-protector-strong to flags
+- Resolves: rhbz#1070783
+
+* Thu Feb 20 2014 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-6
+- use upstream archdef for s390x 64-bit
+- Resolves: rhbz#804763
+
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 3.10.1-5
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 3.10.1-4
+- Mass rebuild 2013-12-27
+
 * Tue Sep 24 2013 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-3
 - disable affinity to prevent crash on systems with fewer cpus
 
