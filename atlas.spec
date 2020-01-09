@@ -5,7 +5,7 @@ Version:        3.10.1
 %if "%{?enable_native_atlas}" != "0"
 %define dist .native
 %endif
-Release:        12%{?dist}
+Release:        3%{?dist}
 Summary:        Automatically Tuned Linear Algebra Software
 
 Group:          System Environment/Libraries
@@ -25,7 +25,7 @@ Source10: 	lapack-3.4.2-clean.tgz
 #archdefs taken from debian:
 Source11: 	POWER332.tar.bz2
 Source12: 	IBMz932.tar.bz2
-#Source13: 	IBMz964.tar.bz2
+Source13: 	IBMz964.tar.bz2
 #upstream arm uses softfp abi, fedora arm uses hard
 Source14: 	ARMv732NEON.tar.bz2
 
@@ -40,18 +40,6 @@ Patch4:		atlas-throttling.patch
 Patch5:		atlas-shared_libraries.patch
 
 Patch6:		atlas-affinity.patch
-
-Patch7:		atlas-aarch64port.patch
-Patch8:		atlas-genparse.patch
-
-Patch9:		atlas-memleak.patch
-# ppc64le patches
-Patch95:	initialize_malloc_memory.invtrsm.wms.oct23.patch
-Patch96:	xlf.command.not.found.patch
-Patch98:	getdoublearr.stripwhite.patch
-Patch99:	ppc64le-remove-vsx.patch
-Patch100:	ppc64le-abiv2.patch
-Patch110:	p8-mem-barrier.patch
 
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -309,6 +297,8 @@ ix86 architecture.
 %endif
 
 %prep
+#uname -a
+#cat /proc/cpuinfo
 %setup -q -n ATLAS
 #patch0 -p0 -b .shared
 %ifarch s390 s390x
@@ -326,38 +316,15 @@ ix86 architecture.
 %patch6 -p1 -b .affinity
 %endif
 #%patch6 -p1 -b .m32
-%ifarch aarch64
-%patch7 -p1 -b .aarch64
-%endif
-%patch8 -p1 -b .genparse
-%patch9 -p1 -b .memleak
 cp %{SOURCE1} CONFIG/ARCHS/
 #cp %{SOURCE2} CONFIG/ARCHS/
 cp %{SOURCE3} doc
 cp %{SOURCE11} CONFIG/ARCHS/
 cp %{SOURCE12} CONFIG/ARCHS/
-#cp %{SOURCE13} CONFIG/ARCHS/
-
+cp %{SOURCE13} CONFIG/ARCHS/
 cp %{SOURCE14} CONFIG/ARCHS/
 #cp %{SOURCE8} CONFIG/ARCHS/
 #cp %{SOURCE9} CONFIG/ARCHS/
-
-%ifarch ppc ppc64
-%patch99 -p2
-#%patch98 -p2
-#%patch95 -p2
-#%patch100 -p2
-%patch110 -p1
-%endif
-
-%ifarch ppc64le
-%patch99 -p2
-%patch98 -p2
-%patch96 -p2
-%patch95 -p2
-%patch100 -p2
-%patch110 -p1
-%endif
 
 %build
 
@@ -371,33 +338,30 @@ for type in %{types}; do
 
 	mkdir -p %{_arch}_${type}
 	pushd %{_arch}_${type}
-	../configure  %{mode} %{?threads_option} %{?arch_option} -D c -DWALL -Fa alg '%{armflags} -g -fstack-protector-strong -Wa,--noexecstack -fPIC'\
+	../configure  %{mode} %{?threads_option} %{?arch_option} -D c -DWALL -Fa alg '%{armflags} -g -Wa,--noexecstack -fPIC'\
 	--prefix=%{buildroot}%{_prefix}			\
 	--incdir=%{buildroot}%{_includedir}		\
 	--libdir=%{buildroot}%{_libdir}/${libname}	\
 	--with-netlib-lapack-tarfile=%{SOURCE10}
 
-sed -i 's#F77FLAGS =\(.*\)#F77FLAGS=\1 -frecursive#' Make.inc
-
 %if "%{?enable_native_atlas}" == "0"
 %ifarch x86_64
 	if [ "$type" = "base" ]; then
 #		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE2#' Make.inc
-#		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE3#' Make.inc
-		sed -i 's#ARCH =.*#ARCH = P4E64SSE3#' Make.inc
+		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE3#' Make.inc
 #		sed -i 's#-DATL_SSE3##' Make.inc
-		sed -i 's#-DATL_AVX\b##' Make.inc
-#		sed -i 's#-msse3#-msse2#' Make.inc
-		sed -i 's#-mavx\b#-msse3#' Make.inc
-		echo 'base makefile edited'
-#		sed -i 's#PMAKE = $(MAKE) .*#PMAKE = $(MAKE) -j 1#' Make.inc
+		sed -i 's#-DATL_AVX##' Make.inc 
+#		sed -i 's#-msse3#-msse2#' Make.inc 
+		sed -i 's#-mavx#-msse3#' Make.inc
+		echo 'base makefile edited' 
+#		sed -i 's#PMAKE = $(MAKE) .*#PMAKE = $(MAKE) -j 1#' Make.inc 
 	elif [ "$type" = "sse3" ]; then
 #		sed -i 's#ARCH =.*#ARCH = Corei264AVX#' Make.inc
 #		sed -i 's#PMAKE = $(MAKE) .*#PMAKE = $(MAKE) -j 1#' Make.inc
-		sed -i 's#-DATL_AVX\b##' Make.inc
+		sed -i 's#-DATL_AVX##' Make.inc
 		sed -i 's#-DATL_SSE2##' Make.inc
-		sed -i 's#-mavx\b#-msse2#' Make.inc
-		sed -i 's#-msse3#-msse2#' Make.inc
+		sed -i 's#-mavx#-msse2#' Make.inc 
+		sed -i 's#-msse3#-msse2#' Make.inc 
 		echo 'sse makefile edited'
 		%define pr_sse3 %(echo $((%{__isa_bits}+4)))
 	fi
@@ -429,16 +393,49 @@ sed -i 's#F77FLAGS =\(.*\)#F77FLAGS=\1 -frecursive#' Make.inc
 %endif
 
 %ifarch s390 s390x
+# we require a z9/z10/z196 but base,z10 and z196
+# we also need a compiler with -march=z196 support
+# the base support will use z196 tuning
 	if [ "$type" = "base" ]; then
 		%ifarch s390x 
-			sed -i 's#ARCH =.*#ARCH = IBMz19664#' Make.inc
+			sed -i 's#ARCH =.*#ARCH = IBMz964#' Make.inc
                 %endif
 		%ifarch s390 
 			sed -i 's#ARCH =.*#ARCH = IBMz932#' Make.inc
                 %endif
-		#sed -i 's#-march=z196#-march=z10 -mtune=z196#' Make.inc
-		sed -i 's#-march=z10#-march=z196#' Make.inc
-		sed -i 's#-march=z9-109#-march=z196#' Make.inc
+		sed -i 's#-march=z196#-march=z9-109 -mtune=z196#' Make.inc
+#		sed -i 's#-march=z10 -mtune=z196#-march=z9-109 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10#-march=z9-109 -mtune=z10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz9#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz9#' Make.inc
+#		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz9#' Make.inc
+	elif [ "$type" = "z10" ]; then
+		%ifarch s390x 
+		
+#			cat Make.inc | grep "ARCH ="
+			sed -i 's#ARCH =.*#ARCH = IBMz1064#' Make.inc
+                %endif
+		%ifarch s390 
+			sed -i 's#ARCH =.*#ARCH = IBMz1032#' Make.inc
+#			cat Make.inc | grep "ARCH ="
+                %endif
+		sed -i 's#-march=z196#-march=z10#' Make.inc
+		sed -i 's#-mtune=z196##' Make.inc
+		sed -i 's#-march=z9-109#-march=z10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz10#' Make.inc
+		%define pr_z10 %(echo $((%{__isa_bits}+1)))
+	elif [ "$type" = "z196" ]; then
+
+		%ifarch s390x 
+			sed -i 's#ARCH =.*#ARCH = IBMz19664#' Make.inc
+                %endif
+		%ifarch s390 
+			sed -i 's#ARCH =.*#ARCH = IBMz19632#' Make.inc
+                %endif
+		sed -i 's#-march=z196#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-march=z9-109#-march=z10 -mtune=z196#' Make.inc
 		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz196#' Make.inc
 		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz196#' Make.inc
 		%define pr_z196 %(echo $((%{__isa_bits}+2)))
@@ -449,18 +446,10 @@ sed -i 's#F77FLAGS =\(.*\)#F77FLAGS=\1 -frecursive#' Make.inc
 	sed -i 's#ARCH =.*#ARCH = POWER332#' Make.inc
 	sed -i 's#-DATL_ARCH_POWER7#-DATL_ARCH_POWER3#g' Make.inc
 	sed -i 's#power7#power3#g' Make.inc
-	sed -i 's#-DATL_VSX\b##g' Make.inc
-	sed -i 's#-mvsx\b##g' Make.inc
+	sed -i 's#-DATL_VSX##g' Make.inc
+	sed -i 's#-mvsx##g' Make.inc
 	sed -i 's#-DATL_AltiVec##g' Make.inc
 	sed -i 's#-m64#-m32#g' Make.inc
-%endif
-
-%ifarch ppc64le
-	sed -i 's#-mvsx##g' Make.inc
-	sed -i 's#-DATL_VSX\b##g' Make.inc
-	sed -i 's#-DATL_AltiVec\b##g' Make.inc
-	sed -i 's#-maltivec##g' Make.inc
-	sed -i 's#ARCH =.*#ARCH = POWER464#' Make.inc
 %endif
 
 %endif
@@ -500,7 +489,7 @@ mkdir -p %{buildroot}%{_includedir}/atlas
 
 
 %check
-%ifnarch s390 aarch64
+%ifnarch s390
 for type in %{types}; do
 	pushd %{_arch}_${type}
 	make check ptcheck
@@ -797,52 +786,6 @@ fi
 %endif
 
 %changelog
-* Wed Mar 15 2017 Jakub Martisko <jamartis@redhat.com> - 3.10.1-12
-- cleanup: merge the application of ppc patches from previous commit
-  into single block
-- Related: rhbz#1350536
-
-* Mon Feb 27 2017 Jakub Martisko <jamartis@redhat.com> - 3.10.1-11
-- apply patches 99 and 110 to all ppc variants
-- build lapack with -frecursive flag (#1176026)
-- fix possible memory leak (#1350536)
-- fix wrong sed substitutions (#1402627)
-- Resolves: rhbz#1350536
-- Related: rhbz#1176026
-
-* Thu Oct 23 2014 Jaromir Capik <jcapik@redhat.com> - 3.10.1-10
-- patching for Power8 to pass performance tunings and tests on P8 builders
-- re-enabling tests on ppc64le
-- Resolves: rhbz#1125475
-
-* Sun Sep 07 2014 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-9
-- ppcle patches (conflicting patches modified)
-- tests on ppcle disabled to shorten build time and fit into 24 hour limit
-- resolves bug 1125475
-- aarch64 patches
-- Resolves: rhbz#1061956
-
-* Fri Feb 28 2014 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-7
-- change x86_64 archdef to P4, prefetch instruction from hammer is illegal on some pentium 4
-- add -fstack-protector-strong to flags
-- Resolves: rhbz#1070783
-
-* Thu Feb 20 2014 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-6
-- use upstream archdef for s390x 64-bit
-- Resolves: rhbz#804763
-
-* Wed Feb 5 2014 Brendan Conoboy <blc@redhat.com> - 3.10.1-5.2
-- Temporarily make %check failures non-fatal.
-
-* Wed Feb 5 2014 Brendan Conoboy <blc@redhat.com> - 3.10.1-5.1
-- Add Mark Salter's initial aarch64 port.
-
-* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 3.10.1-5
-- Mass rebuild 2014-01-24
-
-* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 3.10.1-4
-- Mass rebuild 2013-12-27
-
 * Tue Sep 24 2013 Frantisek Kluknavsky <fkluknav@redhat.com> - 3.10.1-3
 - disable affinity to prevent crash on systems with fewer cpus
 
