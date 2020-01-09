@@ -5,7 +5,7 @@ Version:        3.8.4
 %if "%{?enable_native_atlas}" != "0"
 %define dist .native
 %endif
-Release:        1%{?dist}
+Release:        2%{?dist}
 Summary:        Automatically Tuned Linear Algebra Software
 
 Group:          System Environment/Libraries
@@ -277,6 +277,7 @@ for type in %{types}; do
 	if [ "$type" = "base" ]; then
 		sed -i 's#ARCH =.*#ARCH = PPRO32#' Make.inc
 		sed -i 's#-DATL_SSE3 -DATL_SSE2 -DATL_SSE1##' Make.inc
+		sed -i 's#-DATL_3DNow##' Make.inc
 		sed -i 's#-mfpmath=sse -msse3#-mfpmath=387#' Make.inc
 	elif [ "$type" = "3dnow" ]; then
 		sed -i 's#ARCH =.*#ARCH = K7323DNow#' Make.inc
@@ -661,6 +662,10 @@ fi
 %endif
 
 %changelog
+* Thu Feb 09 2012 Peter Schiffer <pschiffe@redhat.com> 3.8.4-2
+- Resolves: #723350
+  Removed illegal 3DNow instruction set from the base package.
+
 * Fri Jul 08 2011 Petr Lautrbach <plautrba@redhat.com> 3.8.4-1
 - Update to 3.8.4
 - Optimized build and subpackages -z10 and -z196 for Linux on System z (#694459)
