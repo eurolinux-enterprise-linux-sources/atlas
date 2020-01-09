@@ -685,6 +685,7 @@ void GenMainRout(char pre, int n, int *ix, int *iy, int *ia, int *ib,
    fprintf(fpout, "%sreturn(%s(N, X, incx));\n", spc,
            GetNam(pre, AlphaX, AlphaX, 0, 0));
    fprintf(fpout, "   }\n");
+   fprintf(fpout, "   return(ATL_rzero);\n");
    fprintf(fpout, "}\n");
    fclose(fpout);
 }

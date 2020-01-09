@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2000 R. Clint Whaley
  *
  * Code contributers : R. Clint Whaley, Viet Nguyen and Peter Strazdins

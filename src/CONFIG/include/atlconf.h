@@ -16,19 +16,23 @@ enum OSTYPE {OSOther=0, OSLinux, OSSunOS, OSSunOS4, OSOSF1, OSIRIX, OSAIX,
 
 enum ARCHFAM {AFOther=0, AFPPC, AFSPARC, AFALPHA, AFX86, AFIA64, AFMIPS};
 
-#define NMACH 33
+#define NMACH 37
 static char *machnam[NMACH] =
    {"UNKNOWN", "POWER3", "POWER4", "POWER5", "PPCG4", "PPCG5",
+    "POWER6", "POWER7",
     "P5", "P5MMX", "PPRO", "PII", "PIII", "PM", "CoreSolo",
-    "CoreDuo", "Core2Solo", "Core2", "Corei7", "P4", "P4E", "Efficeon", "K7",
-    "HAMMER", "AMD64K10h", "UNKNOWNx86", "IA64Itan", "IA64Itan2",
-    "USI", "USII", "USIII", "USIV", "UnknownUS", "MIPSR1xK", "MIPSICE9"};
+    "CoreDuo", "Core2Solo", "Core2", "Corei1", "Corei2", "P4", "P4E",
+    "Efficeon", "K7", "HAMMER", "AMD64K10h", "UNKNOWNx86",
+    "IA64Itan", "IA64Itan2",
+    "USI", "USII", "USIII", "USIV", "UST2", "UnknownUS",
+    "MIPSR1xK", "MIPSICE9"};
 enum MACHTYPE {MACHOther, IbmPwr3, IbmPwr4, IbmPwr5, PPCG4, PPCG5,
+               IbmPwr6, IbmPwr7,
                IntP5, IntP5MMX, IntPPRO, IntPII, IntPIII, IntPM, IntCoreS,
-               IntCoreDuo, IntCore2Solo, IntCore2, IntCorei7, IntP4, IntP4E,
-               TMEff,
-               AmdAthlon, AmdHammer, Amd64K10h, x86X, IA64Itan, IA64Itan2,
-               SunUSI, SunUSII, SunUSIII, SunUSIV, SunUSX,
+               IntCoreDuo, IntCore2Solo, IntCore2, IntCorei1, IntCorei2,
+               IntP4, IntP4E, TMEff, AmdAthlon, AmdHammer, Amd64K10h, x86X,
+               IA64Itan, IA64Itan2,
+               SunUSI, SunUSII, SunUSIII, SunUSIV, SunUST2, SunUSX,
                MIPSR1xK, /* includes R10K, R12K, R14K, R16K */
                MIPSICE9   /* SiCortex ICE9 -- like MIPS5K */
                };
@@ -38,8 +42,13 @@ enum MACHTYPE {MACHOther, IbmPwr3, IbmPwr4, IbmPwr5, PPCG4, PPCG5,
    ( (mach_) >= IA64Itan && (mach_) <= IA64Itan2 )
 #define MachIsUS(mach_) \
    ( (mach_) >= SunUSI && (mach_) <= SunUSX )
-#define MachIsMIPS(mach_) \
-   ( (mach_) >= MIPSR1xK && (mach_) <= MIPSICE9 )
+#ifdef __mips__
+   #define MachIsMIPS(mach_) \
+      ( (__mips__) || (mach_) >= MIPSR1xK && (mach_) <= MIPSICE9 )
+#else
+   #define MachIsMIPS(mach_) \
+      ( (mach_) >= MIPSR1xK && (mach_) <= MIPSICE9 )
+#endif
 #define MachIsPPC(mach_) \
    ( (mach_) >= PPCG4 && (mach_) <= PPCG5 )
 

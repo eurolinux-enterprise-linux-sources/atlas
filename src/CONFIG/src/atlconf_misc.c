@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 1998 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -482,7 +482,7 @@ enum ARCHFAM ProbeArchFam(char *targ)
       else if (strstr(res, "mips")) fam = AFMIPS;
       else if ( strstr(res, "i686") || strstr(res, "i586") ||
                 strstr(res, "i486") || strstr(res, "i386") ||
-                strstr(res, "x86_64") || strstr(res, "x86_64") ) fam = AFX86;
+                strstr(res, "x86") || strstr(res, "x86_64") ) fam = AFX86;
    }
 /*
  * Try uname -p if uname -m didn't work

@@ -66,6 +66,10 @@ enum MACHTYPE ProbeArch()
       {
          if (strstr(res, "PowerPC_POWER5"))
             mach = IbmPwr5;
+         else if (strstr(res, "PowerPC_POWER7"))
+            mach = IbmPwr7;
+         else if (strstr(res, "PowerPC_POWER6"))
+            mach = IbmPwr6;
          else if (strstr(res, "PowerPC_POWER4"))
             mach = IbmPwr4;
       }

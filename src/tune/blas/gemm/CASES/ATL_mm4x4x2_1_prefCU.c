@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2000 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,7 @@
 
 #if KB == 1
 
-static void ATL_myger(const M, const N, const TYPE *X, const TYPE *Y,
+static void ATL_myger(const int M, const int N, const TYPE *X, const TYPE *Y,
                       const TYPE beta, TYPE *C, const int ldc)
 {
    const TYPE *stY = Y + N;
@@ -46,6 +46,8 @@ static void ATL_myger(const M, const N, const TYPE *X, const TYPE *Y,
    {
       #ifdef BETAX
          Mjoin(PATLU,axpby)(M, *Y++, X, 1, beta, C, incC);
+      #elif defined(BETA0)
+         Mjoin(PATLU,cpsc)(M, *Y++, X, 1, C, incC);
       #else
          Mjoin(PATLU,axpy)(M, *Y++, X, 1, C, incC);
       #endif

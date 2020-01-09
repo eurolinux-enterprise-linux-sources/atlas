@@ -365,10 +365,14 @@ char *GetPtrbitsFlag(enum OSTYPE OS, enum MACHTYPE arch, int ptrbits,
       return(sp);
    else if (OS == OSAIX)
       sp = (ptrbits == 64) ? "-maix64" : "-maix32";
-   else if (ptrbits == 64)
-     sp = "-m64";
-   else if (ptrbits == 32)
-     sp = "-m32";
+   else if ((MachIsX86(arch) || MachIsPPC(arch) || MachIsUS(arch)) ||
+            arch == IbmPwr7 || arch == IbmPwr6)
+   {
+      if (ptrbits == 64)
+         sp = "-m64";
+       else if (ptrbits == 32)
+         sp = "-m32";
+   }
    return(sp);
 }
 
@@ -467,7 +471,7 @@ main(int nargs, char **args)
          ISAX = i;
 
    fprintf(fpout, "#  ----------------------------\n");
-   fprintf(fpout, "#  Make.inc for ATLAS3.8.3\n");
+   fprintf(fpout, "#  Make.inc for ATLAS3.8.4\n");
    fprintf(fpout, "#  ----------------------------\n\n");
 
    fprintf(fpout, "#  ----------------------------------\n");
@@ -664,6 +668,8 @@ main(int nargs, char **args)
          fprintf(fpout, " -melf_i386");
       else if (ptrbits == 64)
          fprintf(fpout, " -melf_x86_64");
+      if (OS == OSFreeBSD)
+         fprintf(fpout, "_fbsd");
    }
    fprintf(fpout, "\n   F77SYSLIB = %s\n", f77lib ? f77lib : "");
    fprintf(fpout, "   BC = $(ICC)\n");
@@ -713,7 +719,7 @@ main(int nargs, char **args)
    fprintf(fpout,
    "#  --------------------------------------------------------------------\n");
    fprintf(fpout,
-   "#  Compiler names for architectural defaults and flags to atlas_install\n");
+   "#  Compiler names for architectural defaults and flags to atlas_build\n");
    fprintf(fpout,
    "#  --------------------------------------------------------------------\n");
    for (i=0; i < NCOMP; i++)

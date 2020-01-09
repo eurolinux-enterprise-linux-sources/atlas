@@ -1,3 +1,20 @@
+ATLAS 3.8.4 released 05/14/11, changes from 3.8.3:
+   * Fixed yet another C/Z GEMM JITcp bug where C was read when BETA=0
+   * Fixed lack of BETA=0 case in ATL_myger used in the gemm kernels
+     ATL_mm4x4x2_1_prefCU and ATL_mm4x4x2US.
+   * Fixed ATL_smm14x1x84_sseCU.c kernel error
+   * Fixed C/Z GEMM JITcp bug where C was read when BETA=0
+   * Fixed illegal read of C in ATL_gereal2cplx.c
+   * Fixed BETA=0 SCAL NaN-propogation bug (no more call to ATL_set)
+   * Updated architecture detection to grok some newer machines and avoid
+     some bugs.
+   * Added compiler flags for some of the new architecures
+   * Renamed xatlas_install to xatlas_build so that Windows 7 doesn't
+     freak out because you are running an executable with the word "install"
+     in the name
+   * Reduced likelihood of cleanup generating illegal code in wild installs
+   * Backported simple AVX gemm kernels
+   * Backported some POWER7 VSX kernels with architectural defaults
 ATLAS 3.8.3 released 02/18/09, changes from 3.8.2:
    * New architectures, arch-specific kernels, and configure support:
      - Changed Core2Duo arch to simply Core2

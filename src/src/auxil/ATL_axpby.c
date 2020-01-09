@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 1999 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,13 @@ void Mjoin(PATL,axpby)
     const SCALAR beta, TYPE *Y, const int incY)
 {
 #ifdef TREAL
-   if (alpha == ATL_rzero) Mjoin(PATL,scal)(N, beta, Y, incY);
+   if (alpha == ATL_rzero)
+   {
+      if (beta != ATL_rzero)
+         Mjoin(PATL,scal)(N, beta, Y, incY);
+      else
+         Mjoin(PATL,zero)(N, Y, incY);
+   }
    else if (beta == ATL_rzero) Mjoin(PATL,cpsc)(N, alpha, X, incX, Y, incY);
    else if (beta == ATL_rone) Mjoin(PATL,axpy)(N, alpha, X, incX, Y, incY);
    else if (alpha == ATL_rone)
@@ -60,7 +66,13 @@ void Mjoin(PATL,axpby)
    const int BetaIsOne = (BetaIsReal && *beta == ATL_rone);
    const int BetaIsZero = (BetaIsReal && *beta == ATL_rzero);
 
-   if (AlphaIsZero) Mjoin(PATL,scal)(N, beta, Y, incY);
+   if (AlphaIsZero)
+   {
+      if (!BetaIsZero)
+         Mjoin(PATL,scal)(N, beta, Y, incY);
+      else
+         Mjoin(PATL,zero)(N, Y, incY);
+   }
    #ifdef Conj_
       else if (BetaIsZero) Mjoin(PATL,moveConj)(N, alpha, X, incX, Y, incY);
       else if (BetaIsOne) Mjoin(PATL,axpyConj)(N, alpha, X, incX, Y, incY);

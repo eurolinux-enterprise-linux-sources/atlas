@@ -257,6 +257,8 @@ enum MACHTYPE Chip2Mach(enum CHIP chip, int model, int x8664)
  */
 {
    enum MACHTYPE iret=MACHOther;
+   const int extmodel = (model & 0xFFFFFFF0) >> 4,
+             lowmodel = model & 0x0000000F;
 
    switch(chip)
    {
@@ -304,9 +306,15 @@ enum MACHTYPE Chip2Mach(enum CHIP chip, int model, int x8664)
       case 29:
          iret = IntCore2;
          break;
-      case 26:
-         iret = IntCorei7;
+      case 0x1A:
+      case 0x1E:
+      case 0x1F:
+         iret = IntCorei1;
          break;
+      case 0x25:
+      case 0x2A:
+         iret = IntCorei2;
+	 break;
       default:
          iret = MACHOther;
       }
@@ -321,6 +329,7 @@ enum MACHTYPE Chip2Mach(enum CHIP chip, int model, int x8664)
          break;
       case 3:
       case 4:
+      case 6:
          iret = IntP4E;
          break;
       default:

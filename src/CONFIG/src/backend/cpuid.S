@@ -3,6 +3,8 @@
         .globl ATL_asmdecor(do_cpuid)
 ATL_asmdecor(do_cpuid):
 #
+#                rdi        rsi
+# void cpuid(int *out, int what);
 # NOTE: cpuid overwrites eax, ebx, ecx, and edx, takes eax as input
 #       -- save ebx
 #

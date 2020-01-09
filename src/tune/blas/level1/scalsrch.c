@@ -747,16 +747,6 @@ void GenMainRout(char pre, int n, int *ix, int *iy, int *ia, int *ib,
 /*
  * Handle all special alpha cases
  */
-   fprintf(fpout, "%sif ( SCALAR_IS_ZERO(alpha) )\n", spc);
-   fprintf(fpout, "%s{\n", spc);
-   if (pre == 'c' || pre == 'z')
-   {
-      fprintf(fpout, "%s   TYPE zero[2] = {ATL_rzero, ATL_rzero};\n", spc);
-      fprintf(fpout, "%s   Mjoin(PATL,set)(N, zero, X, incx);\n", spc);
-   }
-   else fprintf(fpout, "%s   Mjoin(PATL,set)(N, ATL_rzero, X, incx);\n", spc);
-   fprintf(fpout, "%s   return;\n", spc);
-   fprintf(fpout, "%s}\n", spc);
    GenAlphCase(pre, spc, fpout, 1, n, ix, iy, ia, ib);
    GenAlphCase(pre, spc, fpout, -1, n, ix, iy, ia, ib);
    if (pre == 'c' || pre == 'z')

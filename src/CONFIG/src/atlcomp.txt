@@ -41,8 +41,14 @@
 # Core2Solo and Core2Duo
 MACH=Core2Solo OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2'
-# Core2 & Corei7
-MACH=Corei7 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
+# Core2/Corei1/Corei2
+MACH=Corei2 OS=Win9x,WinNT LVL=1005 COMPS=smc,dmc,skc,dkc,icc
+   'gcc-4' '-fomit-frame-pointer -mfpmath=sse -mavx -O2 -fno-schedule-insns2'
+MACH=Corei2 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
+    'gcc' '-fomit-frame-pointer -mfpmath=sse -mavx -O2 -fno-schedule-insns2'
+MACH=Corei1 OS=Win9x,WinNT LVL=1005 COMPS=smc,dmc,skc,dkc,icc
+   'gcc-4' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2 -fno-schedule-insns2'
+MACH=Corei1 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2 -fno-schedule-insns2'
 MACH=Core2 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2'
@@ -51,6 +57,8 @@ MACH=PPRO,PII,PIII,P4,P4E,K7,HAMMER OS=ALL LVL=1000 COMPS=f77
    'gfortran' '-fomit-frame-pointer -mfpmath=387 -O2 -falign-loops=4'
 MACH=PPRO,PII,PIII,P4,P4E,K7,HAMMER OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -mfpmath=387 -O2 -falign-loops=4'
+MACH=PPRO,PII,PIII,P4,P4E,K7,HAMMER OS=Win9x,WinNT LVL=1005 COMPS=smc,dmc,skc,dkc,icc
+   'gcc-4' '-fomit-frame-pointer -mfpmath=387 -O2 -falign-loops=4'
 # CoreSolo,CoreDuo
 MACH=CoreSolo,CoreDuo OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -O3 -mfpmath=387'
@@ -59,6 +67,13 @@ MACH=AMD64K10h OS=ALL LVL=1000 COMPS=f77
    'gfortran' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2 -falign-loops=32'
 MACH=AMD64K10h OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc
    'gcc' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2 -falign-loops=32'
+MACH=AMD64K10h OS=Win9x,WinNT LVL=1005 COMPS=smc,dmc,skc,dkc,icc
+   'gcc' '-fomit-frame-pointer -mfpmath=sse -msse3 -O2 -falign-loops=32'
+# UltraSPARC T2
+MACH=UST2 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
+    'gcc' '-mcpu=niagara2 -mtune=niagara2 -Os'
+MACH=UST2 OS=ALL LVL=1000 COMPS=f77
+   'gfortran' '-mcpu=niagara2 -mtune=niagara2 -Os'
 # UltraSPARC III & IV
 MACH=USIII,USIV OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc
    'gcc' '-mcpu=ultrasparc3 -mtune=ultrasparc3 -O3 -funroll-all-loops'
@@ -126,6 +141,15 @@ MACH=POWER4 OS=ALL LVL=1010 COMPS=icc,dmc,smc,dkc,skc,xcc
    'gcc' '-mcpu=power4 -mtune=power4 -O3 -fno-schedule-insns -fno-rerun-loop-opt'
 MACH=POWER4 OS=ALL LVL=1010 COMPS=f77
    'xlf' '-qtune=pwr4 -qarch=pwr4 -O3 -qmaxmem=-1 -qfloat=hsflt'
+MACH=POWER6 OS=ALL LVL=1010 COMPS=icc,smc,dmc,skc,dkc,xcc
+   'gcc' '-mcpu=power6 -mtune=power6 -maltivec -O3 -fno-schedule-insns -fschedule-insns2 -minsert-sched-nops=2'
+MACH=POWER6 OS=ALL LVL=1010 COMPS=f77
+   'gfortran' '-mcpu=power6 -mtune=power6 -maltivec -O3 -fno-schedule-insns -fschedule-insns2 -minsert-sched-nops=2'
+MACH=POWER7 OS=ALL LVL=1010 COMPS=icc,smc,dmc,skc,dkc,xcc
+   'gcc' '-O3 -mvsx -mcpu=power7 -mtune=power7 -fno-schedule-insns -fschedule-insns2'
+MACH=POWER7 OS=ALL LVL=1010 COMPS=f77
+   'gfortran' '-O3 -mvsx -mcpu=power7 -mtune=power7 -fno-schedule-insns -fschedule-insns2'
+
 #
 # Windows defaults ; need to make SSE/SSE2 arch dep.
 #

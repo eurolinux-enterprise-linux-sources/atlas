@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2007 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,53 @@ void Mjoin(PATL,gereal2cplx)
    const int ldc2 = (ldc-M)<<1;
    int i, j;
 
-   if (ialp == ATL_rzero && ibet == ATL_rzero)
+/*
+ * Cannot read C if BETA is 0
+ */
+   if (rbet == ATL_rzero && ibet == ATL_rzero)
+   {
+      if (ialp == ATL_rzero)  /* alpha is a real number */
+      {
+         if (ralp == ATL_rone) /* alpha = 1.0 */
+         {
+            for (j=0; j < N; j++, R += ldr, I += ldi, C += ldc2)
+            {
+               for (i=0; i < M; i++, C += 2)
+               {
+                  *C = R[i];
+                  C[1] = I[i];
+               }
+            }
+         }
+         else
+         {
+            for (j=0; j < N; j++, R += ldr, I += ldi, C += ldc2)
+            {
+               for (i=0; i < M; i++, C += 2)
+               {
+                  *C = ralp * R[i];
+                  C[1] = ralp * I[i];
+               }
+            }
+         }
+      }
+      else                   /* alpha is a complex number */
+      {
+         for (j=0; j < N; j++, R += ldr, I += ldi, C += ldc2)
+         {
+            for (i=0; i < M; i++, C += 2)
+            {
+               ra = R[i]; ia = I[i];
+               C[0] = ralp * ra - ialp * ia;
+               C[1] = ralp * ia + ialp * ra;
+            }
+         }
+      }
+   }
+/*
+ * If alpha and beta are both real numbers
+ */
+   else if (ialp == ATL_rzero && ibet == ATL_rzero)
    {
       if (ralp == ATL_rone && rbet == ATL_rone)
       {

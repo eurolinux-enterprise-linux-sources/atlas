@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 1998 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -354,10 +354,10 @@ void PrintBanner(char *fnam, int START, int sec, int subsec, int subsubsec)
    GetDate(&month, &day, &year, &hour, &min);
    fprintf(fp, "\n%s%s%s", sep, sep, sep);
    if (START)
-      fprintf(fp, "*       BEGAN ATLAS3.8.3  INSTALL OF SECTION %1d-%1d-%1d ON %02d/%02d/%04d AT %02d:%02d     *\n",
+      fprintf(fp, "*       BEGAN ATLAS3.8.4  INSTALL OF SECTION %1d-%1d-%1d ON %02d/%02d/%04d AT %02d:%02d     *\n",
               sec, subsec, subsubsec, month, day, year, hour, min);
    else
-      fprintf(fp, "*      FINISHED ATLAS3.8.3  INSTALL OF SECTION %1d-%1d-%1d ON %02d/%02d/%04d AT %02d:%02d   *\n",
+      fprintf(fp, "*      FINISHED ATLAS3.8.4  INSTALL OF SECTION %1d-%1d-%1d ON %02d/%02d/%04d AT %02d:%02d   *\n",
                       sec, subsec, subsubsec, month, day, year, hour, min);
    fprintf(fp, "%s%s%s\n\n\n", sep, sep, sep);
    fclose(fp);
@@ -382,7 +382,7 @@ void GetMMRES(char pre, int *muladd, int *lat, int *nb, int *pref,
    if ( fgets(ln, 256, fp) )  /* user-supplied GEMM was best */
    {
       assert(fscanf(fp, " %d %d %lf \"%[^\"]\" \"%[^\"]",
-                    &icase, &i, umf, ufile, auth) == 5);
+                    icase, &i, umf, ufile, auth) == 5);
    }
    else
    {

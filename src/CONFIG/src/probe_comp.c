@@ -532,10 +532,14 @@ char *GetPtrbitsFlag(enum OSTYPE OS, enum MACHTYPE arch, int ptrbits,
       return(sp);
    else if (OS == OSAIX)
       sp = (ptrbits == 64) ? "-maix64" : "-maix32";
-   else if (ptrbits == 64)
-     sp = "-m64";
-   else if (ptrbits == 32)
-     sp = "-m32";
+   else if ((MachIsX86(arch) || MachIsPPC(arch) || MachIsUS(arch)) ||
+            arch == IbmPwr7 || arch == IbmPwr6)
+   {
+      if (ptrbits == 64)
+         sp = "-m64";
+       else if (ptrbits == 32)
+         sp = "-m32";
+   }
    return(sp);
 }
 char *GetStandardCompName(char *comp)

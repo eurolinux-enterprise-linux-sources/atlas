@@ -115,3 +115,6 @@ following people have contributed to ATLAS:
        ** Provided code template for Core2-friendly 2-D register block
           which allowed us to greatly increase our Core2 GEMM performance.
           See ATLAS/tune/blas/gemm/CASES/ATL_dmm4x2x128_sse2.c for details.
+
+                              Tom Wallace
+       ** A lot of testing and bug fixes for 3.8.4.

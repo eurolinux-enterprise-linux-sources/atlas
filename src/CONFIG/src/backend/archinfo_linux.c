@@ -75,6 +75,9 @@ enum MACHTYPE ProbeArch()
          else if (strstr(res, "7447")) mach = PPCG4;
          else if (strstr(res, "7455")) mach = PPCG4;
          else if (strstr(res, "PPC970FX")) mach = PPCG5;
+         else if (strstr(res, "PPC970MP")) mach = PPCG5;
+         else if (strstr(res, "POWER7")) mach = IbmPwr7;
+         else if (strstr(res, "POWER6")) mach = IbmPwr6;
          else if (strstr(res, "POWER5")) mach = IbmPwr5;
          else if (strstr(res, "POWER4")) mach = IbmPwr4;
       }
@@ -131,6 +134,28 @@ enum MACHTYPE ProbeArch()
                   else if (i == 3) mach = IntP4E;
                }
             }
+         }
+         else if (strstr(res, "Core"))
+         {
+            if (strstr(res, "i7"))
+            {
+               if (strstr(res, "2600"))
+                  mach = IntCorei2;
+               else
+                  mach = IntCorei1;
+            }
+            if (strstr(res, "i5"))
+            {
+               if (strstr(res, "i5-2500") || strstr(res, "i5-2400") ||
+	           strstr(res, "i5-2390") || strstr(res, "i5-2300"))
+                  mach = IntCorei2;
+               else
+                  mach = IntCorei1;
+            }
+         }
+         else if (strstr(res, "Xeon")) /* dreaded Xeon-is-anything */
+         {
+            if (strstr(res, "E5420")) mach = IntCore2;
          }
          else if (strstr(res, "Efficeon")) mach = TMEff;
          else if (strstr(res, "Athlon HX")) mach = AmdHammer;
@@ -244,6 +269,9 @@ int ProbeMhz()
    char res[1024];
    if (!CmndOneLine(NULL, "fgrep 'cpu MHz' /proc/cpuinfo", res))
       mhz = GetFirstInt(res);
+   if (!mhz &&
+       !CmndOneLine(NULL, "cat /proc/cpuinfo | fgrep clock | fgrep MHz", res))
+      mhz = GetLastInt(res);
    return(mhz);
 }
 

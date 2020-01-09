@@ -1,8 +1,11 @@
 %define enable_native_atlas 0
 
 Name:           atlas
-Version:        3.8.3
-Release:        12.4%{?dist}
+Version:        3.8.4
+%if "%{?enable_native_atlas}" != "0"
+%define dist .native
+%endif
+Release:        1%{?dist}
 Summary:        Automatically Tuned Linear Algebra Software
 
 Group:          System Environment/Libraries
@@ -12,12 +15,16 @@ Source0:        http://downloads.sourceforge.net/math-atlas/%{name}%{version}.ta
 Source1:        PPRO32.tgz
 Source2:        K7323DNow.tgz
 Source3:        README.RHEL
+Source6:        IBMz1032.tgz
+Source7:        IBMz1064.tgz
+Source8:        IBMz19632.tgz
+Source9:        IBMz19664.tgz
 Patch0:		atlas-fedora_shared.patch
-#s390 is 31bit and gcc doesn't have the -m32 parameter
-Patch1:		atlas-s390-m31.patch
+# Optimized math library for Linux on System z (#694459)
+Patch1:         atlas-s390port.patch
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-BuildRequires:  gcc-gfortran lapack-devel
+BuildRequires:  gcc-gfortran lapack-devel lapack-static
 
 %description
 The ATLAS (Automatically Tuned Linear Algebra Software) project is an
@@ -40,7 +47,7 @@ Summary:        Development libraries for ATLAS
 Group:          Development/Libraries
 Requires:       %{name} = %{version}-%{release}
 Obsoletes:	%name-header <= %version-%release
-Requires(posttans):	chkconfig
+Requires(posttrans):	chkconfig
 Requires(preun):	chkconfig
 
 %description devel
@@ -52,6 +59,35 @@ with ATLAS (Automatically Tuned Linear Algebra Software).
 %if "%{?enable_native_atlas}" == "0"
 ############## Subpackages for architecture extensions #################
 #
+%ifarch x86_64
+%define types base sse3
+
+%package sse3
+Summary:        ATLAS libraries for SSE3 extensions
+Group:          System Environment/Libraries
+
+%description sse3
+This package contains the ATLAS (Automatically Tuned Linear Algebra
+Software) libraries compiled with optimizations for the SSE3
+extensions to the x86_64 architecture. The base ATLAS builds in
+Red Hat Enterprise Linux for the
+x86_64 architecture are made for the SSE2 extensions.
+
+%package sse3-devel
+Summary:        Development libraries for ATLAS with SSE3 extensions
+Group:          Development/Libraries
+Requires:       %{name}-sse3 = %{version}-%{release}
+Obsoletes:	%name-header <= %version-%release
+Requires(posttrans):	chkconfig
+Requires(preun):	chkconfig
+
+%description sse3-devel
+This package contains shared and static versions of the ATLAS
+(Automatically Tuned Linear Algebra Software) libraries compiled with
+optimizations for the SSE3 extensions to the x86_64 architecture.
+
+%endif
+
 %ifarch %{ix86}
 %define types base 3dnow sse sse2 sse3
 
@@ -93,7 +129,7 @@ Summary:        Development libraries for ATLAS with SSE extensions
 Group:          Development/Libraries
 Requires:       %{name}-sse = %{version}-%{release}
 Obsoletes:	%name-header <= %version-%release
-Requires(posttans):	chkconfig
+Requires(posttrans):	chkconfig
 Requires(preun):	chkconfig
 
 %description sse-devel
@@ -116,7 +152,7 @@ Summary:        Development libraries for ATLAS with SSE2 extensions
 Group:          Development/Libraries
 Requires:       %{name}-sse2 = %{version}-%{release}
 Obsoletes:	%name-header <= %version-%release
-Requires(posttans):	chkconfig
+Requires(posttrans):	chkconfig
 Requires(preun):	chkconfig
 
 %description sse2-devel
@@ -125,7 +161,7 @@ This package contains shared and static versions of the ATLAS
 optimizations for the SSE2 extensions to the ix86 architecture.
 
 %package sse3
-Summary:        ATLAS libraries for 3DNow extensions
+Summary:        ATLAS libraries for SSE3 extensions
 Group:          System Environment/Libraries
 
 %description sse3
@@ -134,17 +170,64 @@ libraries compiled with optimizations for the SSE3.  Red Hat Enterprise Linux
 also produces ATLAS build with SSE(1) and SSE2 extensions.
 
 %package sse3-devel
-Summary:        Development libraries for ATLAS with 3DNow extensions
+Summary:        Development libraries for ATLAS with SSE3 extensions
 Group:          Development/Libraries
 Requires:       %{name}-sse3 = %{version}-%{release}
 Obsoletes:	%name-header <= %version-%release
-Requires(posttans):	chkconfig
+Requires(posttrans):	chkconfig
 Requires(preun):	chkconfig
 
 %description sse3-devel
 This package contains shared and static versions of the ATLAS
 (Automatically Tuned Linear Algebra Software) libraries compiled with
-optimizations for the sse3 extensions to the ix86 architecture.
+optimizations for the SSE3 extensions to the ix86 architecture.
+
+%endif
+
+%ifarch s390 s390x
+%define types base z10 z196
+
+%package z196
+Summary:        ATLAS libraries for z196
+Group:          System Environment/Libraries
+
+%description z196
+This package contains the ATLAS (Automatically Tuned Linear Algebra
+Software) libraries compiled with optimizations for the z196.
+
+%package z196-devel
+Summary:        Development libraries for ATLAS for z196
+Group:          Development/Libraries
+Requires:       %{name}-z196 = %{version}-%{release}
+Obsoletes:	%name-header <= %version-%release
+Requires(posttrans):	chkconfig
+Requires(preun):	chkconfig
+
+%description z196-devel
+This package contains headers and shared versions of the ATLAS
+(Automatically Tuned Linear Algebra Software) libraries compiled with
+optimizations for the z196 architecture.
+
+%package z10
+Summary:        ATLAS libraries for z10
+Group:          System Environment/Libraries
+
+%description z10
+This package contains the ATLAS (Automatically Tuned Linear Algebra
+Software) libraries compiled with optimizations for the z10.
+
+%package z10-devel
+Summary:        Development libraries for ATLAS for z10
+Group:          Development/Libraries
+Requires:       %{name}-z10 = %{version}-%{release}
+Obsoletes:	%name-header <= %version-%release
+Requires(posttrans):	chkconfig
+Requires(preun):	chkconfig
+
+%description z10-devel
+This package contains shared and static versions of the ATLAS
+(Automatically Tuned Linear Algebra Software) libraries compiled with
+optimizations for the z10 architecture.
 
 %endif
 %endif
@@ -156,6 +239,10 @@ optimizations for the sse3 extensions to the ix86 architecture.
 cp %{SOURCE1} CONFIG/ARCHS/
 cp %{SOURCE2} CONFIG/ARCHS/
 cp %{SOURCE3} doc
+cp %{SOURCE6} CONFIG/ARCHS/
+cp %{SOURCE7} CONFIG/ARCHS/
+cp %{SOURCE8} CONFIG/ARCHS/
+cp %{SOURCE9} CONFIG/ARCHS/
 
 %build
 for type in %{types}; do
@@ -168,36 +255,96 @@ for type in %{types}; do
 	mkdir -p %{_arch}_${type}
 	pushd %{_arch}_${type}
 	../configure -b %{__isa_bits} -D c -DWALL -Fa alg '-g -Wa,--noexecstack -fPIC'\
-	-Si cputhrchk 0\
 	--prefix=%{buildroot}%{_prefix}			\
 	--incdir=%{buildroot}%{_includedir}		\
 	--libdir=%{buildroot}%{_libdir}/${libname}	\
-	--with-netlib-lapack=%{_libdir}/liblapack_pic.a
+	--with-netlib-lapack=%{_libdir}/liblapack_pic.a	\
+	-Si cputhrchk 0
+
+%if "%{?enable_native_atlas}" == "0"
+%ifarch x86_64
+	if [ "$type" = "base" ]; then
+		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE2#' Make.inc
+		sed -i 's#-DATL_SSE3##' Make.inc
+		sed -i 's#-msse3#-msse2#' Make.inc
+	elif [ "$type" = "sse3" ]; then
+		sed -i 's#ARCH =.*#ARCH = HAMMER64SSE3#' Make.inc
+		%define pr_sse3 %(echo $((%{__isa_bits}+4)))
+	fi
+%endif
 
 %ifarch %{ix86}
 	if [ "$type" = "base" ]; then
 		sed -i 's#ARCH =.*#ARCH = PPRO32#' Make.inc
-		sed -i 's#-DATL_SSE3 -DATL_SSE2 -DATL_SSE1##' Make.inc 
-		sed -i 's#-mfpmath=sse -msse3#-mfpmath=387#' Make.inc 
+		sed -i 's#-DATL_SSE3 -DATL_SSE2 -DATL_SSE1##' Make.inc
+		sed -i 's#-mfpmath=sse -msse3#-mfpmath=387#' Make.inc
 	elif [ "$type" = "3dnow" ]; then
 		sed -i 's#ARCH =.*#ARCH = K7323DNow#' Make.inc
-		sed -i 's#-DATL_SSE3 -DATL_SSE2 -DATL_SSE1##' Make.inc 
-		sed -i 's#-mfpmath=sse -msse3#-mfpmath=387#' Make.inc 
+		sed -i 's#-DATL_SSE3 -DATL_SSE2 -DATL_SSE1##' Make.inc
+		sed -i 's#-mfpmath=sse -msse3#-mfpmath=387#' Make.inc
 		%define pr_3dnow %(echo $((%{__isa_bits}+1)))
 	elif [ "$type" = "sse" ]; then
 		sed -i 's#ARCH =.*#ARCH = PIII32SSE1#' Make.inc
-		sed -i 's#-DATL_SSE3 -DATL_SSE2##' Make.inc 
-		sed -i 's#-msse3#-msse#' Make.inc 
+		sed -i 's#-DATL_SSE3 -DATL_SSE2##' Make.inc
+		sed -i 's#-msse3#-msse#' Make.inc
 		%define pr_sse %(echo $((%{__isa_bits}+2)))
 	elif [ "$type" = "sse2" ]; then
 		sed -i 's#ARCH =.*#ARCH = P432SSE2#' Make.inc
-		sed -i 's#-DATL_SSE3##' Make.inc 
-		sed -i 's#-msse3#-msse2#' Make.inc 
+		sed -i 's#-DATL_SSE3##' Make.inc
+		sed -i 's#-msse3#-msse2#' Make.inc
 		%define pr_sse2 %(echo $((%{__isa_bits}+3)))
 	elif [ "$type" = "sse3" ]; then
 		sed -i 's#ARCH =.*#ARCH = P4E32SSE3#' Make.inc
 		%define pr_sse3 %(echo $((%{__isa_bits}+4)))
 	fi
+%endif
+
+%ifarch s390 s390x
+# we require a z9/z10/z196 but base,z10 and z196
+# we also need a compiler with -march=z196 support
+# the base support will use z196 tuning
+	if [ "$type" = "base" ]; then
+		%ifarch s390x
+			sed -i 's#ARCH =.*#ARCH = IBMz19664#' Make.inc
+                %endif
+		%ifarch s390
+			sed -i 's#ARCH =.*#ARCH = IBMz19632#' Make.inc
+                %endif
+		sed -i 's#-march=z196#-march=z9-109 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10 -mtune=z196#-march=z9-109 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10#-march=z9-109 -mtune=z10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz9#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz9#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz9#' Make.inc
+	elif [ "$type" = "z10" ]; then
+		%ifarch s390x
+			sed -i 's#ARCH =.*#ARCH = IBMz1064#' Make.inc
+                %endif
+		%ifarch s390
+			sed -i 's#ARCH =.*#ARCH = IBMz1032#' Make.inc
+                %endif
+		sed -i 's#-march=z196#-march=z10#' Make.inc
+		sed -i 's#-march=z10 -mtune=z196#-march=z10#' Make.inc
+		sed -i 's#-march=z9-109#-march=z10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz196#-DATL_ARCH_IBMz10#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz10#' Make.inc
+		%define pr_z10 %(echo $((%{__isa_bits}+1)))
+	elif [ "$type" = "z196" ]; then
+		%ifarch s390x
+			sed -i 's#ARCH =.*#ARCH = IBMz19664#' Make.inc
+                %endif
+		%ifarch s390
+			sed -i 's#ARCH =.*#ARCH = IBMz19632#' Make.inc
+                %endif
+		sed -i 's#-march=z196#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-march=z10#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-march=z9-109#-march=z10 -mtune=z196#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz10#-DATL_ARCH_IBMz196#' Make.inc
+		sed -i 's#-DATL_ARCH_IBMz9#-DATL_ARCH_IBMz196#' Make.inc
+		%define pr_z196 %(echo $((%{__isa_bits}+2)))
+	fi
+%endif
+
 %endif
 	make build
 	cd lib
@@ -224,8 +371,13 @@ for type in %{types}; do
 		echo "%{_libdir}/atlas"		\
 		> %{buildroot}/etc/ld.so.conf.d/atlas-%{_arch}.conf
 	else
+%ifarch %{ix86}
 		echo "%{_libdir}/atlas-${type}"	\
 		> %{buildroot}/etc/ld.so.conf.d/atlas-${type}.conf
+%else
+		echo "%{_libdir}/atlas-${type}"	\
+		> %{buildroot}/etc/ld.so.conf.d/atlas-%{_arch}-${type}.conf
+%endif
 	fi
 done
 mkdir -p %{buildroot}%{_includedir}/atlas
@@ -249,8 +401,27 @@ if [ $1 -ge 0 ] ; then
 /usr/sbin/alternatives --remove atlas-inc %{_includedir}/atlas-%{_arch}-base
 fi
 
-%ifarch %{ix86} && %if "%{?enable_native_atlas}" == "0"
+%if "%{?enable_native_atlas}" == "0"
+%ifarch x86_64
 
+%post -n atlas-sse3 -p /sbin/ldconfig
+
+%postun -n atlas-sse3 -p /sbin/ldconfig
+
+%posttrans sse3-devel
+if [ $1 -eq 0 ] ; then
+/usr/sbin/alternatives	--install %{_includedir}/atlas atlas-inc 	\
+		%{_includedir}/atlas-%{_arch}-sse3  %{pr_sse3}
+fi
+
+%preun sse3-devel
+if [ $1 -ge 0 ] ; then
+/usr/sbin/alternatives --remove atlas-inc %{_includedir}/atlas-%{_arch}-sse3
+fi
+
+%endif
+
+%ifarch %{ix86}
 %post -n atlas-3dnow -p /sbin/ldconfig
 
 %postun -n atlas-3dnow -p /sbin/ldconfig
@@ -313,6 +484,41 @@ fi
 
 %endif
 
+%ifarch s390 s390x
+%post -n atlas-z10 -p /sbin/ldconfig
+
+%postun -n atlas-z10 -p /sbin/ldconfig
+
+%posttrans z10-devel
+if [ $1 -eq 0 ] ; then
+/usr/sbin/alternatives	--install %{_includedir}/atlas atlas-inc 	\
+		%{_includedir}/atlas-%{_arch}-z10  %{pr_z10}
+fi
+
+%preun z10-devel
+if [ $1 -ge 0 ] ; then
+/usr/sbin/alternatives --remove atlas-inc %{_includedir}/atlas-%{_arch}-z10
+fi
+
+%post -n atlas-z196 -p /sbin/ldconfig
+
+%postun -n atlas-z196 -p /sbin/ldconfig
+
+%posttrans z196-devel
+if [ $1 -eq 0 ] ; then
+/usr/sbin/alternatives	--install %{_includedir}/atlas atlas-inc 	\
+		%{_includedir}/atlas-%{_arch}-z196  %{pr_z196}
+fi
+
+%preun z196-devel
+if [ $1 -ge 0 ] ; then
+/usr/sbin/alternatives --remove atlas-inc %{_includedir}/atlas-%{_arch}-z196
+fi
+
+%endif
+
+%endif
+
 %files
 %defattr(-,root,root,-)
 %doc doc/README.RHEL
@@ -329,7 +535,29 @@ fi
 %{_includedir}/*.h
 %ghost %{_includedir}/atlas
 
-%ifarch %{ix86} && %if "%{?enable_native_atlas}" == "0"
+%if "%{?enable_native_atlas}" == "0"
+
+%ifarch x86_64
+
+%files sse3
+%defattr(-,root,root,-)
+%doc doc/README.RHEL
+%dir %{_libdir}/atlas-sse3
+%{_libdir}/atlas-sse3/*.so.*
+%config(noreplace) /etc/ld.so.conf.d/atlas-%{_arch}-sse3.conf
+
+%files sse3-devel
+%defattr(-,root,root,-)
+%doc doc
+%{_libdir}/atlas-sse3/*.so
+%{_libdir}/atlas-sse3/*.a
+%{_includedir}/atlas-%{_arch}-sse3/
+%{_includedir}/*.h
+%ghost %{_includedir}/atlas
+
+%endif
+
+%ifarch %{ix86}
 
 %files 3dnow
 %defattr(-,root,root,-)
@@ -397,7 +625,46 @@ fi
 
 %endif
 
+%ifarch s390 s390x
+%files z10
+%defattr(-,root,root,-)
+%doc doc/README.RHEL
+%dir %{_libdir}/atlas-z10
+%{_libdir}/atlas-z10/*.so.*
+%config(noreplace) /etc/ld.so.conf.d/atlas-%{_arch}-z10.conf
+
+%files z10-devel
+%defattr(-,root,root,-)
+%doc doc
+%{_libdir}/atlas-z10/*.so
+%{_libdir}/atlas-z10/*.a
+%{_includedir}/atlas-%{_arch}-z10/
+%{_includedir}/*.h
+%ghost %{_includedir}/atlas
+
+%files z196
+%defattr(-,root,root,-)
+%doc doc/README.RHEL
+%dir %{_libdir}/atlas-z196
+%{_libdir}/atlas-z196/*.so.*
+%config(noreplace) /etc/ld.so.conf.d/atlas-%{_arch}-z196.conf
+
+%files z196-devel
+%defattr(-,root,root,-)
+%doc doc
+%{_libdir}/atlas-z196/*.so
+%{_libdir}/atlas-z196/*.a
+%{_includedir}/atlas-%{_arch}-z196/
+%{_includedir}/*.h
+%ghost %{_includedir}/atlas
+%endif
+%endif
+
 %changelog
+* Fri Jul 08 2011 Petr Lautrbach <plautrba@redhat.com> 3.8.4-1
+- Update to 3.8.4
+- Optimized build and subpackages -z10 and -z196 for Linux on System z (#694459)
+
 * Thu Jun 10 2010 Petr Lautrbach <plautrba@redhat.com> 3.8.3-12.4
 - Documentation fix
 - Resolves: rhbz#596658

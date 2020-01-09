@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 1997 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -125,7 +125,7 @@ void emit_muladd(char *type, char pre, int MULADD, int lat,
 /*
  * main()
  */
-   fprintf(fpout, "\nmain(int nargs, char **args[])\n{\n");
+   fprintf(fpout, "\nmain(int nargs, char **args)\n{\n");
    fprintf(fpout, "   long nreps = 16000000/%d;\n", (2*nama));
    fprintf(fpout, "   int i, k;\n");
    fprintf(fpout, "   double t0, tim, mf;\n");
@@ -337,7 +337,7 @@ MinIsOdd:
    else return(M);
 }
 
-main(int nargs, char *args[])
+main(int nargs, char **args)
 {
    char pre, *type, fnam[64];
    int k, kma, kno, kbest, maxlat, mflop, nlma=1;

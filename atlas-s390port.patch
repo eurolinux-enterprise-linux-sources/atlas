@@ -1,0 +1,279 @@
+---
+ CONFIG/include/atlconf.h            |   18 +++++++-----
+ CONFIG/src/Makefile                 |    5 +++
+ CONFIG/src/SpewMakeInc.c            |    5 +++
+ CONFIG/src/atlcomp.txt              |   50 ++++++++++++++++++++++++++++++++++++
+ CONFIG/src/atlconf_misc.c           |    2 +
+ CONFIG/src/backend/Make.ext         |    2 +
+ CONFIG/src/backend/archinfo_linux.c |   12 ++++++++
+ CONFIG/src/backend/probe_gas_s390.S |   13 +++++++++
+ CONFIG/src/probe_comp.c             |    2 +
+ include/atlas_prefetch.h            |    6 ++++
+ 10 files changed, 108 insertions(+), 7 deletions(-)
+
+Index: b/CONFIG/include/atlconf.h
+===================================================================
+--- a/CONFIG/include/atlconf.h
++++ b/CONFIG/include/atlconf.h
+@@ -14,9 +14,9 @@ enum OSTYPE {OSOther=0, OSLinux, OSSunOS
+              OSWin9x, OSWinNT, OSHPUX, OSFreeBSD, OSOSX};
+ #define OSIsWin(OS_) (((OS_) == OSWinNT) || ((OS_) == OSWin9x))
+ 
+-enum ARCHFAM {AFOther=0, AFPPC, AFSPARC, AFALPHA, AFX86, AFIA64, AFMIPS};
++enum ARCHFAM {AFOther=0, AFPPC, AFSPARC, AFALPHA, AFX86, AFIA64, AFMIPS, AFS390};
+ 
+-#define NMACH 37
++#define NMACH 42
+ static char *machnam[NMACH] =
+    {"UNKNOWN", "POWER3", "POWER4", "POWER5", "PPCG4", "PPCG5",
+     "POWER6", "POWER7",
+@@ -25,7 +25,8 @@ static char *machnam[NMACH] =
+     "Efficeon", "K7", "HAMMER", "AMD64K10h", "UNKNOWNx86",
+     "IA64Itan", "IA64Itan2",
+     "USI", "USII", "USIII", "USIV", "UST2", "UnknownUS",
+-    "MIPSR1xK", "MIPSICE9"};
++    "MIPSR1xK", "MIPSICE9",
++    "IBMz900", "IBMz990", "IBMz9", "IBMz10", "IBMz196" };
+ enum MACHTYPE {MACHOther, IbmPwr3, IbmPwr4, IbmPwr5, PPCG4, PPCG5,
+                IbmPwr6, IbmPwr7,
+                IntP5, IntP5MMX, IntPPRO, IntPII, IntPIII, IntPM, IntCoreS,
+@@ -34,7 +35,8 @@ enum MACHTYPE {MACHOther, IbmPwr3, IbmPw
+                IA64Itan, IA64Itan2,
+                SunUSI, SunUSII, SunUSIII, SunUSIV, SunUST2, SunUSX,
+                MIPSR1xK, /* includes R10K, R12K, R14K, R16K */
+-               MIPSICE9   /* SiCortex ICE9 -- like MIPS5K */
++               MIPSICE9,   /* SiCortex ICE9 -- like MIPS5K */
++               IBMz900, IBMz990, IBMz9, IBMz10, IBMz196 /* s390(x) in Linux */
+                };
+ #define MachIsX86(mach_) \
+    ( (mach_) >= IntP5 && (mach_) <= x86X )
+@@ -51,6 +53,8 @@ enum MACHTYPE {MACHOther, IbmPwr3, IbmPw
+ #endif
+ #define MachIsPPC(mach_) \
+    ( (mach_) >= PPCG4 && (mach_) <= PPCG5 )
++#define MachIsS390(mach_) \
++   ( (mach_) >= IBMz900 && (mach_) <= IBMz196 )
+ 
+ static char *f2c_namestr[5] = {"UNKNOWN","Add_", "Add__", "NoChange", "UpCase"};
+ static char *f2c_intstr[5] =
+@@ -68,13 +72,13 @@ static char *ISAXNAM[NISA] =
+    {"", "AltiVec", "SSE3", "SSE2", "SSE1", "3DNow"};
+ enum ISAEXT {ISA_None=0, ISA_AV, ISA_SSE3, ISA_SSE2, ISA_SSE1, ISA_3DNow};
+ 
+-#define NASMD 7
++#define NASMD 8
+ enum ASMDIA
+    {ASM_None=0, gas_x86_32, gas_x86_64, gas_sparc, gas_ppc, gas_parisc,
+-    gas_mips};
++    gas_mips, gas_s390};
+ static char *ASMNAM[NASMD] =
+    {"",     "GAS_x8632", "GAS_x8664", "GAS_SPARC", "GAS_PPC", "GAS_PARISC",
+-    "GAS_MIPS"};
++    "GAS_MIPS", "GAS_S390"};
+ 
+ 
+ /*
+Index: b/CONFIG/src/Makefile
+===================================================================
+--- a/CONFIG/src/Makefile
++++ b/CONFIG/src/Makefile
+@@ -177,6 +177,11 @@ IRun_GAS_x8632 :
+ 	$(MAKE) $(atlrun) atldir=$(mydir) exe=xprobe_gas_x8632 args="$(args)" \
+                 redir=config0.out
+ 	- cat config0.out
++IRun_GAS_S390 :
++	$(CC) $(CCFLAGS) -o xprobe_gas_s390 $(SRCdir)/backend/probe_this_asm.c $(SRCdir)/backend/probe_gas_s390.S
++	$(MAKE) $(atlrun) atldir=$(mydir) exe=xprobe_gas_s390 args="$(args)" \
++                redir=config0.out
++	- cat config0.out
+ 
+ IRunC2C :
+ 	- rm -f config0.out xc2c c2cslave.o
+Index: b/CONFIG/src/SpewMakeInc.c
+===================================================================
+--- a/CONFIG/src/SpewMakeInc.c
++++ b/CONFIG/src/SpewMakeInc.c
+@@ -342,6 +342,9 @@ char *GetPtrbitsFlag(enum OSTYPE OS, enu
+       return(sp);
+    if (MachIsMIPS(arch))
+       return((ptrbits == 64) ? "-mabi=64" : "-mabi=n32");
++   if (MachIsS390(arch))
++      return((ptrbits == 64) ? "-m64" : "-m31");
++
+    if (!CompIsGcc(comp))
+    {
+ /*
+@@ -671,6 +674,8 @@ main(int nargs, char **args)
+       if (OS == OSFreeBSD)
+          fprintf(fpout, "_fbsd");
+    }
++   if (MachIsS390(mach))
++      fprintf(fpout, ptrbits == 32 ? "-m31" : "-m64");
+    fprintf(fpout, "\n   F77SYSLIB = %s\n", f77lib ? f77lib : "");
+    fprintf(fpout, "   BC = $(ICC)\n");
+    fprintf(fpout, "   NCFLAGS = $(ICCFLAGS)\n");
+Index: b/CONFIG/src/atlcomp.txt
+===================================================================
+--- a/CONFIG/src/atlcomp.txt
++++ b/CONFIG/src/atlcomp.txt
+@@ -164,6 +164,56 @@ MACH=ALL OS=WinNT LVL=0 COMPS=f77
+ MACH=P4,PM OS=WinNT LVL=0 COMPS=icc,dmc,smc,dkc,skc,xcc
+    'icl' '-QxN -O3 -Qprec -fp:extended -fp:except -nologo -Oy'
+ #
++# IBM System z or zEnterprise
++#
++
++# z900 or z800
++MACH=IBMz900 OS=ALL LVL=1000 COMPS=f77
++   'gfortran' '-march=z900 -O3 -funroll-loops'
++MACH=IBMz900 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z900 -O3 -funroll-loops'
++
++# z990 or z890
++MACH=IBMz990 OS=ALL LVL=1000 COMPS=f77
++   'gfortran' '-march=z990 -O3 -funroll-loops'
++MACH=IBMz990 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z990 -O3 -funroll-loops'
++
++# z9-EC z9-BC or z9-109
++MACH=IBMz9 OS=ALL LVL=1000 COMPS=f77
++   'gfortran' '-march=z9-109 -O3 -funroll-loops'
++MACH=IBMz9 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z9-109 -O3 -funroll-loops'
++
++# on z10 and z196 gcc emits prefetches which disturb cache size
++# detection and optimization. Therefore, we use fno-prefetch-loop-arrays
++# z10
++MACH=IBMz10 OS=ALL LVL=1000 COMPS=f77
++   'gfortran' '-march=z10 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++MACH=IBMz10 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z10 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++
++# z196. we also try to fallback to z10 and z9 for older compilers
++MACH=IBMz196 OS=ALL LVL=1000 COMPS=f77
++   'gfortran' '-march=z196 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++MACH=IBMz196 OS=ALL LVL=800 COMPS=f77
++   'gfortran' '-march=z10 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++MACH=IBMz196 OS=ALL LVL=600 COMPS=f77
++   'gfortran' '-march=z9-109 -O3 -funroll-loops'
++MACH=IBMz196 OS=ALL LVL=1000 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z196 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++MACH=IBMz196 OS=ALL LVL=800 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z10 -O3 -funroll-loops -fno-prefetch-loop-arrays'
++MACH=IBMz196 OS=ALL LVL=600 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-march=z9-109 -O3 -funroll-loops'
++
++# ALL march options failed, go back to conservative defaults
++MACH=IBMz900,IBMz990,IBMz9,IBMz10,IBMz196 OS=ALL LVL=500 COMPS=f77
++   'gfortran' '-O3 -funroll-loops'
++MACH=IBMz900,IBMz990,IBMz9,IBMz10,IBMz196 OS=ALL LVL=500 COMPS=smc,dmc,skc,dkc,icc,xcc
++   'gcc' '-O3 -funroll-loops'
++
++#
+ # Generic defaults
+ #
+ MACH=ALL OS=ALL LVL=5 COMPS=icc,smc,dmc,skc,dkc,xcc
+Index: b/CONFIG/src/atlconf_misc.c
+===================================================================
+--- a/CONFIG/src/atlconf_misc.c
++++ b/CONFIG/src/atlconf_misc.c
+@@ -480,6 +480,7 @@ enum ARCHFAM ProbeArchFam(char *targ)
+       else if (strstr(res, "alpha")) fam = AFALPHA;
+       else if (strstr(res, "ia64")) fam = AFIA64;
+       else if (strstr(res, "mips")) fam = AFMIPS;
++      else if (strstr(res, "s390")) fam = AFS390;
+       else if ( strstr(res, "i686") || strstr(res, "i586") ||
+                 strstr(res, "i486") || strstr(res, "i386") ||
+                 strstr(res, "x86") || strstr(res, "x86_64") ) fam = AFX86;
+@@ -501,6 +502,7 @@ enum ARCHFAM ProbeArchFam(char *targ)
+                    strstr(res, "i486") || strstr(res, "i386") ||
+                    strstr(res, "x86_64") ) fam = AFX86;
+          else if (strstr(res, "mips")) fam = AFMIPS;
++         else if (strstr(res, "s390")) fam = AFS390;
+       }
+    }
+    return(fam);
+Index: b/CONFIG/src/backend/Make.ext
+===================================================================
+--- a/CONFIG/src/backend/Make.ext
++++ b/CONFIG/src/backend/Make.ext
+@@ -43,6 +43,8 @@ probe_gas_parisc.S : $(basf)
+ 	$(extC) -b $(basf) -o probe_gas_parisc.S rout=probe_gas_parisc.S
+ probe_gas_mips.S : $(basf)
+ 	$(extC) -b $(basf) -o probe_gas_mips.S rout=probe_gas_mips.S
++probe_gas_s390.S : $(basf)
++	$(extC) -b $(basf) -o probe_gas_s390.S rout=probe_gas_s390.S
+ probe_SSE3.S : $(basf)
+ 	$(extC) -b $(basf) -o probe_SSE3.S rout=probe_SSE3.S
+ probe_SSE2.S : $(basf)
+Index: b/CONFIG/src/backend/archinfo_linux.c
+===================================================================
+--- a/CONFIG/src/backend/archinfo_linux.c
++++ b/CONFIG/src/backend/archinfo_linux.c
+@@ -193,6 +193,18 @@ enum MACHTYPE ProbeArch()
+       }
+       #endif
+       break;
++   case AFS390:
++      if ( !CmndOneLine(NULL, "cat /proc/cpuinfo | fgrep \"processor \"", res) )
++      {
++         if (strstr(res, "2064") || strstr(res, "2066")) mach = IBMz900;
++         else if (strstr(res, "2084") || strstr(res, "2086")) mach = IBMz990;
++         else if (strstr(res, "2094") || strstr(res, "2096")) mach = IBMz9;
++         else if (strstr(res, "2097") || strstr(res, "2098")) mach = IBMz10;
++         /* we consider anything else to be a z196 or later */
++         else mach = IBMz196;
++      }
++      break;
++
+    default:
+ #if 0
+       if (!CmndOneLine(NULL, "fgrep 'cpu family' /proc/cpuinfo", res))
+Index: b/CONFIG/src/backend/probe_gas_s390.S
+===================================================================
+--- /dev/null
++++ b/CONFIG/src/backend/probe_gas_s390.S
+@@ -0,0 +1,13 @@
++#define ATL_GAS_PPC
++#include "atlas_asm.h"
++/*
++ * Linux S390 assembler for:
++ * int asm_probe(int i)
++ * RETURNS: i*3
++ */
++.globl ATL_asmdecor(asm_probe)
++ATL_asmdecor(asm_probe):
++	lr	r3,r2
++	ar	r2,r3
++	ar	r2,r3
++	br	r14
+Index: b/CONFIG/src/probe_comp.c
+===================================================================
+--- a/CONFIG/src/probe_comp.c
++++ b/CONFIG/src/probe_comp.c
+@@ -509,6 +509,8 @@ char *GetPtrbitsFlag(enum OSTYPE OS, enu
+       return(sp);
+    if (MachIsMIPS(arch))
+       return((ptrbits == 64) ? "-mabi=64" : "-mabi=n32");
++   if (MachIsS390(arch))
++      return((ptrbits == 64) ? "-m64" : "-m31");
+    if (!CompIsGcc(comp))
+    {
+ /*
+Index: b/include/atlas_prefetch.h
+===================================================================
+--- a/include/atlas_prefetch.h
++++ b/include/atlas_prefetch.h
+@@ -149,6 +149,12 @@
+    #define ATL_GOT_L1PREFETCH
+    #define ATL_L1LS 32
+    #define ATL_L2LS 64
++#elif defined(ATL_ARCH_IBMz196) || defined(ATL_ARCH_IBMz10)
++   #define ATL_pfl1R(mem) __builtin_prefetch(mem, 0, 3)
++   #define ATL_pfl1W(mem) __builtin_prefetch(mem, 1, 3)
++   #define ATL_GOT_L1PREFETCH
++   #define ATL_L1LS 256
++   #define ATL_L2LS 256
+ #elif defined(__GNUC__)  /* last ditch, use gcc predefined func */
+    #define ATL_pfl1R(mem) __builtin_prefetch(mem, 0, 3)
+    #define ATL_pfl1W(mem) __builtin_prefetch(mem, 1, 3)

@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2001 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+
+#include "atlas_asm.h"
 
 #define Mjoin(pre, nam) my_join(pre, nam)
 #define my_join(pre, nam) pre ## nam

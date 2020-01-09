@@ -114,32 +114,6 @@ void ATL_srefscal
  */
    if( ( N > 0 ) && ( alpha != ATL_sONE ) )
    {
-      if( alpha == ATL_sZERO )
-      {
-         if( ( nu = ( N >> 3 ) << 3 ) != 0 )
-         {
-            StX = (float *)X + nu * INCX;
-
-            do
-            {
-               (*X)     = ATL_sZERO; X[incX4] = ATL_sZERO;
-               X[INCX ] = ATL_sZERO; X[incX5] = ATL_sZERO;
-               X[incX2] = ATL_sZERO; X[incX6] = ATL_sZERO;
-               X[incX3] = ATL_sZERO; X[incX7] = ATL_sZERO;
-
-               X  += incX8;
-
-            } while( X != StX );
-         }
-
-         for( i = N - nu; i != 0; i-- )
-         {
-            *X = ATL_sZERO;
-            X += INCX;
-         }
-      }
-      else
-      {
          if( ( nu = ( N >> 3 ) << 3 ) != 0 )
          {
             StX = (float *)X + nu * INCX;
@@ -173,7 +147,6 @@ void ATL_srefscal
             *X  = x0;
             X  += INCX;
          }
-      }
    }
 /*
  * End of ATL_srefscal

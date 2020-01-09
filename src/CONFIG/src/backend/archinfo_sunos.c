@@ -66,6 +66,8 @@ enum MACHTYPE ProbeArch()
       {
          if (strstr(res, "UltraSPARC-IV"))
             mach = SunUSIV;
+         else if (strstr(res, "UltraSPARC-T2"))
+            mach = SunUST2;
          else if (strstr(res, "UltraSPARC-III"))
             mach = SunUSIII;
          else if (strstr(res, "UltraSPARC-II"))

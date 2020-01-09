@@ -69,7 +69,7 @@ enum MACHTYPE ProbeArch()
             if (strstr(res,"c1,2")||strstr(res,"c3,1")||strstr(res,"c3,2")||
                 strstr(res,"c3,3")||strstr(res,"c3,4")||strstr(res,"c3,5")||
                 strstr(res,"c3,6")||strstr(res,"c4,2")||strstr(res,"c4,5")||
-                strstr(res,"c5,1"))
+                strstr(res,"c5,1")||strstr(res,"c10,1"))
                mach = PPCG4;
             else if (strstr(res,"c11,2")|| strstr(res,"c12,1")||
                      strstr(res,"c7,2") || strstr(res,"c7,3") ||

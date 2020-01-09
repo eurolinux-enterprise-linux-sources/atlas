@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                   (C) Copyright 2001 Peter Soendergaard
  *
  * Code contributers : Peter Soendergaard, R. Clint Whaley

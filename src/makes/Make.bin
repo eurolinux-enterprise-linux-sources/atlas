@@ -20,7 +20,7 @@ xatlas_waitfile : atlas_waitfile.o $(SYSdir)/ATL_Xwalltime.o
 	$(XCC) $(XCCFLAGS) -o $@ atlas_waitfile.o $(SYSdir)/ATL_Xwalltime.o
 atlas_waitfile.o : $(mySRCdir)/atlas_waitfile.c
 	$(XCC) $(XCCFLAGS) -c $(mySRCdir)/atlas_waitfile.c
-xatlas_install : xatlas_tee atlas_install.o 
+xatlas_build : xatlas_tee atlas_install.o 
 	$(XCC) $(XCCFLAGS) -o $@ atlas_install.o
 atlas_install.o : $(mySRCdir)/atlas_install.c
 	$(XCC) $(XCCFLAGS) -c $(mySRCdir)/atlas_install.c

@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2003 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +45,12 @@
 #endif
 #if !defined(KB) || (KB == 0)
    #error "KB must be a compile-time constant!"
+#endif
+#if KB > 84
+   #error "KB cannot exceed 84!"
+#endif
+#if (KB/4)*4 != KB
+   #error "KB must be a multiple of 4!"
 #endif
 #if (MB/14)*14 != MB
    #error "MB must be multiple of 14!"

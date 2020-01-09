@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2006 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -300,7 +300,9 @@ int Mjoin(PATL,mmJKI)(const enum ATLAS_TRANS TA, const enum ATLAS_TRANS TB,
             {
                Mjoin(PATL,copy)(mp, A+k+k, lda, pA+((k*ldaa)<<1), 1);
                Mjoin(PATLU,scal)(mp, ATL_rnone, pA+1+((k*ldaa)<<1), 2);
-               if (!SCALAR_IS_ONE(alpha))
+               if (SCALAR_IS_ZERO(alpha))
+                  Mjoin(PATL,zero)(mp, pA+((k*ldaa)<<1), 1);
+               else if (!SCALAR_IS_ONE(alpha))
                   Mjoin(PATL,scal)(mp, alpha, pA+((k*ldaa)<<1), 1);
             }
          }

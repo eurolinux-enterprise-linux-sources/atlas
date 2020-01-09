@@ -114,32 +114,6 @@ void ATL_drefscal
  */
    if( ( N > 0 ) && ( alpha != ATL_dONE ) )
    {
-      if( alpha == ATL_dZERO )
-      {
-         if( ( nu = ( N >> 3 ) << 3 ) != 0 )
-         {
-            StX = (double *)X + nu * INCX;
-
-            do
-            {
-               (*X)     = ATL_dZERO; X[incX4] = ATL_dZERO;
-               X[INCX ] = ATL_dZERO; X[incX5] = ATL_dZERO;
-               X[incX2] = ATL_dZERO; X[incX6] = ATL_dZERO;
-               X[incX3] = ATL_dZERO; X[incX7] = ATL_dZERO;
-
-               X  += incX8;
-
-            } while( X != StX );
-         }
-
-         for( i = N - nu; i != 0; i-- )
-         {
-            *X = ATL_dZERO;
-            X += INCX;
-         }
-      }
-      else
-      {
          if( ( nu = ( N >> 3 ) << 3 ) != 0 )
          {
             StX = (double *)X + nu * INCX;
@@ -173,7 +147,6 @@ void ATL_drefscal
             *X  = x0;
             X  += INCX;
          }
-      }
    }
 /*
  * End of ATL_drefscal

@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2007 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -227,7 +227,7 @@ static void Mjoin(PATL,mmK)
  */
 {
    int m, n, kr;  /* # of row/cols to operate on, m >= M, n >= N */
-   int k;
+   int k, ZEROED=0;
    const TYPE one[2] = {ATL_rone, ATL_rzero}, zero[2] = {ATL_rzero, ATL_rzero};
 /*
  * Indexes to next blk (i.e. real to imag) of matrices; always uses full
@@ -267,8 +267,9 @@ static void Mjoin(PATL,mmK)
    else  /* two or more dim < NB, requires generated cleanup */
    {
       NBmm0 = NBmm1 = NBmmX = Mjoin(PATLU,pKBmm);
-      if (SCALAR_IS_ZERO(beta))
-         Mjoin(PATL,gezero)(M, N, C, ldc);
+      Mjoin(PATLU,gezero)(M, N, pC+ipc, ldpc);
+      Mjoin(PATLU,gezero)(M, N, pC, ldpc);
+      ZEROED = 1;
    }
    if (nblk)
    {
@@ -336,7 +337,7 @@ static void Mjoin(PATL,mmK)
          if (m < MB || n < NB) /* use general K cleanup */
          {
             n = N; m = M;
-            if (!nblk)
+            if (!nblk && !ZEROED)
             {
                Mjoin(PATLU,gezero)(M, N, pC, ldpc);
                Mjoin(PATLU,gezero)(M, N, pC+ipc, ldpc);

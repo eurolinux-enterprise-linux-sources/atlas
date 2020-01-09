@@ -235,7 +235,7 @@ double DoTiming(int N, int nkflop, int cachesize, SCALAR alpha, int incX)
    double t0, t1;
 
    #ifdef TCPLX
-      double ialpha[2], *alp=alpha;
+      TYPE ialpha[2], *alp=alpha;
       if (alpha[1] == 0.0)
       {
          ialpha[1] = 0.0;

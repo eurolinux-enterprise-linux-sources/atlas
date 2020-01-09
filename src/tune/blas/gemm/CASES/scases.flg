@@ -1,5 +1,5 @@
 <ID> <flag> <mb> <nb> <kb> <muladd> <lat> <mu> <nu> <ku> <rout> "<Contributer>"
-21
+22
 304 192 4 3 8 0 4 4 3 8 ATL_mm4x3x8p.c     "R. Clint Whaley" \
 gcc
 -mcpu=ultrasparc -mtune=ultrasparc -fomit-frame-pointer -O
@@ -57,3 +57,4 @@ gcc
 331 192 4 4 1 1 1 4 4 1 ATL_smm4x4xURx_mips.c  "R. Clint Whaley" \
 gcc
 -x assembler-with-cpp -mips4
+332 192 8 2 4 1 0 8 2 4 ATL_smm8x2x4_av.c  "IBM"

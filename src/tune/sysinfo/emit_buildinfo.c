@@ -1,5 +1,5 @@
 /*
- *             Automatically Tuned Linear Algebra Software v3.8.3
+ *             Automatically Tuned Linear Algebra Software v3.8.4
  *                    (C) Copyright 2001 R. Clint Whaley
  *
  * Redistribution and use in source and binary forms, with or without
@@ -195,7 +195,7 @@ void PrintInstInfo(FILE *fpout)
    fprintf(fpout, "#define ATL_SYSINFO \"%s\"\n", SYS);
    fprintf(fpout, "#define ATL_DATE    \"%s\"\n", DATE);
    fprintf(fpout, "#define ATL_UNAM    \"%s\"\n", UNAM);
-   fprintf(fpout, "#define ATL_VERS    \"3.8.3\"\n");
+   fprintf(fpout, "#define ATL_VERS    \"3.8.4\"\n");
 }
 
 void CreateFile(char *file)

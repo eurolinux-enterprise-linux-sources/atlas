@@ -14,7 +14,12 @@ enum OSTYPE ProbeOS(int verb, char *targ)
    ierr = CmndOneLine(targ, ln2, ln);
    if (ierr == 0)
    {
-      if(strstr(ln, "Linux")) OS = OSLinux;
+/*
+ *
+ *    Accept GNU (HURD) as Linux, since they seem to use same stuff;
+ *    This is patch from Sylvestre Ledru; I have no direct experience wt HURD
+ */
+      if(strstr(ln, "Linux") || strstr(ln, "GNU")) OS = OSLinux;
       else if(strstr(ln, "FreeBSD")) OS = OSFreeBSD;
       else if (strstr(ln, "Darwin")) OS = OSOSX;
       else if(strstr(ln, "SunOS"))
